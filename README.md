@@ -1,0 +1,1 @@
+# stig_rhel8
