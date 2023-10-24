@@ -1,0 +1,72 @@
+#making sure ansible will run the jmespath
+yum install ansible-core -y
+#yum install python3.11 python3.11-distutils
+python3 -m pip install jmespath
+/usr/bin/pip3.11 install jmespath
+
+
+#got the ansible lockdown RHEL8 stig
+git clone https://github.com/ansible-lockdown/RHEL8-STIG.git
+
+#setting up my VM that will be CONTROLLER
+scp RHEL8-STIG folder to VM to use the ansible as CONTROLLER
+
+#create a target
+/home/student/RHEL8-STIG/hosts
+
+
+#make sure ssh is setup
+ssh-keygen
+ssh-copy-id -i ~/.ssh/id_rsapub user@host
+
+
+#ran as student and become was sudo password.
+#only CAT I
+ansible-playbook -i hosts --ask-become-pass -e '{ "rhel8stig_cat2_patch":false,"rhel8stig_cat3_patch":false }' site.yml
+
+#only CAT I and II
+# ansible-playbook -i hosts --ask-become-pass -e '{"rhel8stig_cat1_patch":true, "rhel8stig_cat2_patch":true,"rhel8stig_cat3_patch":false }' site.yml
+
+#only CAT I, II and III
+#ansible-playbook -i hosts --ask-become-pass -e '{"rhel8stig_cat1_patch":true, "rhel8stig_cat2_patch":true,"rhel8stig_cat3_patch":true }' site.yml
+
+
+#NEEDED MODULES FROM ANSIBLE-GALAXY TO RUN PLAYBOOK
+ansible-galaxy collection install community.crypto
+#https://galaxy.ansible.com/ui/repo/published/community/crypto/
+ansible-galaxy collection install community.general
+#https://galaxy.ansible.com/ui/repo/published/community/general/
+ansible-galaxy collection install ansible.posix
+#https://galaxy.ansible.com/ui/repo/published/ansible/posix/
+
+
+
+#command I'm running from /home/student/RHEL8-STIG
+ansible-playbook -i hosts --ask-become-pass -e '{ "rhel8stig_cat2_patch":false,"rhel8stig_cat3_patch":false }' site.yml
+
+#failed at:
+fatal: [192.168.1.22]: FAILED! => {
+    "assertion": "rhel8stig_bootloader_password_hash != 'grub.pbkdf2.sha512.changethispassword'",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "This role will not be able to run single user password commands as rhel8stig_bootloader_password_hash variable has not been set"
+}
+
+#solution:
+/home/student/RHEL8-STIG/tasks/main.yml > ignore_errors: true > Check rhel8stig_bootloader_password_hash variable
+
+
+#failed at:
+#TASK [/home/student/RHEL8-STIG : HIGH | RHEL-08-010020 | PATCH | If /boot or /boot/efi reside on separate partitions, the kernel parameter boot=<partition> must be added to the kernel command line.] ***
+
+#solution:
+#ignore_errors: true
+
+
+#failed at:
+TASK [/home/student/RHEL8-STIG : HIGH | RHEL-08-010020 | AUDIT | Verify kernel parameters in /etc/default/grub]
+
+#solution:
+#ignore_errors: true
+
+
