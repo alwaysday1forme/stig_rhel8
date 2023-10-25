@@ -61,12 +61,15 @@ OpenSCAP Error: Unable to open file: '/tmp/tmp.q2zQuk2xCR/Red_Hat_Enterprise_Lin
 #https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/scanning-the-system-for-configuration-compliance-and-vulnerabilities_security-hardening
 
 
-
-
-
-
-
-
+#############work in progress
+#during scanning to remediate
+#oscap-ssh student@192.168.1.22 22 xccdf eval --remediate --results-arf results.xml --report /var/www/html/remote_report.html U_RHEL_8_STIG_V1R11_Manual-xccdf.xml
+#remediate after scanning
+#oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_ospp --results results.xml /usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml
+#review remediations
+#oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_ospp --results results.xml /usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml
+#oscap info results.xml
+#oscap xccdf generate fix --fix-type bash --output my-remediation-script.sh --result-id xccdf_org.open-scap_testresult_xccdf_org.ssgproject.content_profile_ospp results.xml
 
 
 ###VULNERABILITY SCANNING
