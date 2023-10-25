@@ -835,7 +835,7 @@ rhel8stig_int_gid: 1000
 rhel8stig_hashing_rounds: 5000
 
 # RHEL-08-010100
-rhel8stig_path_to_sshkey: "/root/.ssh/"
+rhel8stig_path_to_sshkey: "~/.ssh/"
 
 # RHEL-08-010331
 # rhel8stig_lib_dir_perms is the permissions that will be set to library directories when they are found to be 755 or more permissive and rhel8stig_disruption_high is true
