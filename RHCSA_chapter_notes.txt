@@ -1,0 +1,652 @@
+RHCSA EXAM PREP
+
+### Chapter 1 ###
+just installing. the setup needed for the exam:
+LVM
+/ 10GiB			lvm xfs volume group cl
+/boot 500MiB		ext4 standard
+swap 1024 MiB = 1GiB	lvm xfs volume group cl
+
+this will leave 8.5 GiB left for the LVM/stratis/vdo
+
+
+
+
+### Chapter 2 ###
+essential tools
+
+STDOUT will not show anything when directed to /dev/null
+STDERR will show since it is an error and not an STDOUT
+ls less & more
+
+
+
+
+### Chapter 3 ###
+file management tools
+
+df -hT
+mount
+ln -s  #symbolic link #example ln -s /source /dest
+tar -tvf file.tar #to see contents
+tar -tcf #to archive
+tar -xvf file.tar -C /directory #-C is location you want to untar it
+gzip to compress
+gunzip to uncompress but can leave it .tar still
+
+
+
+
+### Chapter 4 ###
+working with text files
+
+ps aux | less
+
+more /etc/passwd
+cut -f 1 -d : /etc/passwd   #-f is field, 1 is for first, -d is delimiter which is ':'
+sort -k is to sort by column
+
+
+
+### Chapter 5 ###
+connecting to several terminals
+IN TERMINAL:
+su -
+tail -f /var/log/secure #shows how to see who is logged in.
+
+#commands to get to different virtual consoles
+chvt 1 (graphical login)
+chvt 2 provides access current console
+chvt 3 give access back to current session
+chvt 4-6 gives access to non graphical consoles
+
+#overview of all users who are currently logged in.
+commands:
+ w
+
+systemctl reboot
+systemctl poweroff
+
+ssh:
+use w from console that did ssh to see the TTY
+ 
+ssh -l (l for login)
+
+ssh -v (debug -vvv for super debug)
+
+ssh -Y (graphics in a ssh session)
+ #need /etc/ssh/ssh_config > ForwardX11 yes
+ 
+scp -r (recursive secure copy)
+
+
+### Chapter 6 ###
+user group management
+useradd -G wheel user  (G is for group)
+usermod -aG wheel user (a is for append)
+
+useradd
+userdel
+passwd
+chage
+
+/etc/default/useradd
+/etc/login.defs
+
+id user
+
+
+
+### Chapter 7 ###
+permissions management
+chown -R ownership:group (-R recursive)
+newgrp (to change primary group for user)
+chmod -R o+rx /directory (big X instead for executable on directories only)
+
+
+getfacl
+setfacl
+umask
+chattr
+lsattr
+
+
+
+
+### Chapter 8 ###
+configuring network
+
+ip a
+ip addr show
+ip -s link show
+ip route show
+
+nmtui
+nmcli con show
+
+
+
+
+
+### Chapter 9 ###
+managing software
+
+mkdir /repo
+vi /etc/fstab: 
+  /dev/sr0 /repo iso 9660 defaults 0 0
+mount -a (verifies /etc/fstab is a good mount)
+
+vi /etc/yum.repos.d/BaseOS.repo
+[BaseOS]
+name=BaseOS
+baseurl=file:///repo/BaseOS
+gpgcheck=0
+
+vi /etc/yum.repos.d/AppStream.repo
+[AppStream]
+name=AppStream
+baseurl=file:///repo/AppStream
+gpgcheck=0
+
+yum repolist (to verify the repo files are good)
+
+yum list | less
+yum groups list
+yum groups list hidden
+yum groups info 
+yum history 
+yum history undo (remove a yum action from history)
+yum search
+yum provides */seinfo (shows the package that contains this file)
+
+yum module list postgresql (see available modules for perl)
+yum module info postgresql:15 (see info on postgresql module,including the repo is is in)
+yum module info postgresql --profile (will show you what you need to yum install)
+
+yum module install postgresql:15/common (installs postgres for common,not devel or minimal)
+yum module reset postgresql (goes back to the [d] default postgresql that was listed in "yum module list postgresql")
+
+yum distro-sync (make sure dependent packages are updated)
+
+
+rpm -qa (list all packages on the server)
+which <package> (find the /sbin/<package>
+
+rpm -qf $(which <package>) ---> will find you the rpm for the module
+
+
+
+### Chapter 10 ###
+managing processes
+
+jobs
+fg
+bg
+top
+
+ps aux | head
+ps auxfww | grep <package> (will show you the /bin file thats kicking it off)
+
+renice -n 5 <PID> (positive number will give it less priority)
+kill -9 <PID> (force kill)
+kill -15 <PID> (ask process to stop)
+
+uptime
+lscpu (to see cores)
+
+yum install tuned (daemon to give best performance)
+tuned-adm active (to see what profile it has)
+tuned-adm recommend (to see what is recommended)
+tuned-adm profile <profile name> (to set it)
+tuned-adm profile (will show you all types)
+
+
+
+
+### Chapter 11 ###
+working with systemd
+
+systemctl -t help (to see the unit types)
+systemctl start
+systemctl enable --now
+systemctl disable
+systemctl list-dependencies <service> (see dependencies)
+systemctl list-dependencies <service> --reverse (shows what is dependent on this service)
+
+systemctl show <service> (lists all options that can be configured in service.unit)
+systemctl edit <service>
+systemctl cat <service>
+systemctl daemon-reload
+systemctl restart <service>
+
+
+### Chapter 12 ###
+scheduling tasks
+
+crontab -e (opens crontab editor)
+
+cd /etc/cron.hourly
+cd /etc/cron.daily
+cd /etc/cron.weekly
+cd /etc/cron.monthly
+
+chmod +x <file> (otherwise the task won't execute)
+
+at command
+systemctl status at
+at 15:00 (runs command at 1500)
+<input command> Ctrl+D to exit
+atq to see the command given
+
+
+
+### Chapter 13 ###
+configuring logging
+
+tail -f /var/log/messages
+vi /etc/httpd/conf/httpd.conf
+ErrorLog  syslog:local1
+systemctl restart httpd
+
+add a line in /etc/rsyslog.conf:
+#/var/log/httpd-error.log (used from the httpd service ^)
+local1.error  /var/log/httpd-error.log
+systemctl restart rsyslog
+
+echo "*.debug /var/log/messages-debug"> /etc/rsyslog.d/debug.conf
+
+systemctl restart rsyslog
+tail -f /var/log/messages-debug
+
+journalctl -f (live mode)
+journalctl -n 20 (just like tail -n 20)
+
+journalctl -p err (shows errors only)
+journalctl --since yesterday -p err (since yesterday)
+
+make permanent:
+mkdir /var/log/journal
+chown root:systemd-journal /var/log/journal
+killall-USR1 systemd-journal
+journalctl -b
+
+
+
+### Chapter 14 ###
+Managing Storage
+
+fdisk
+gdisk
+parted (I don't feel like doing it. don't think it's necessary)
+
+Creating MBR with fdisk:
+dd if=/dev/sda of=/root/diskfile bs=1M count=1 (creates backup)
+cp /etc/fstab /root/fstab (making backup of fstab as well)
+fdisk /dev/sda
+  p (list the partitions)
+  n (create a new partition)
+  p (creating a primary)
+  default (next sector that is available)
+  +1G (makes 1 GiB partition)
+  choose the paritition type (82 linux swap, 83 linux, 8e lvm)
+  w (to write)
+  partprobe /dev/sda (allows you to write on the kernel partition table to create a file system)
+
+  
+Extended or logical volumes on MBR:
+fidsk /dev/sda
+  n
+  e (for extended)
+    n (will create a new partition on the extended for logical volume)
+    default
+    +100M (for 100MiB)
+    w
+  partprobe (if error with partprobe, reboot system)
+
+Creating GPT with gdisk:
+gdisk /dev/sdb
+
+<same process as fdisk>  
+
+
+Creating a swap partition:
+fdisk /dev/sda
+  n
+  default
+  default
+  t 82 (change type to swap,82, 8200 for gdisk)
+  w
+  mkswap /dev/sda3 (you pick the parition you made, example sda3)
+  free -m (see the amount of swap available)
+  swapon
+
+blkid (find the UUID to make a line in /etc/fstab)
+
+
+
+### Chapter 15 ###
+managing advanced storage (LVM)
+see chapter 14 for partition:
+fdisk
+gdisk
+
+create physical/volumegroup/logicalvolumegroup:
+pvs
+pvdisplay
+pvcreate
+lsblk
+vgdisplay
+vgcreate <vg_name> /dev/sda3 (the partition lvm sits on)
+lvcreate -n <lv_name> -l <number%>FREE <vg_name>
+lvs (verify it was made)
+mkfs.ext4 /dev/vg_name/lv_name
+mkdir /files (folder for the volume to mount to)
+
+vi /etc/fstab
+/dev/vg_name/lv_name  /files  ext4  defaults 0 0
+
+mount -a
+
+Resizing LVM:
+vgextend vg_name /dev/sda3  (extend volume group)
+lvresize -r (-r is for resizing the file system)
+lvresize -L (+or -) 1G -r /dev/vg_name/lv_name
+
+
+Stratis:
+yum install stratis-cli stratisd
+yum install stratisd
+systemctl enable --now stratisd
+stratis pool create <pool_name> /dev/sda3
+stratis pool list
+stris fs create <pool_name> <fs_name>
+stratis fs list
+mkdir /fs_dir_to_mount_to
+blkid (find the stratis UUID)
+
+vi /etc/fstab
+UUID=xxx /fs_dir_to_mount_to  xfs defaults,x-systemd.requires=stratisd.service 0 0
+
+mount -a
+
+stratis filesystem snapshot <pool_name> <fs_name> <stratis_snapshot_name>
+stratis filesystem list
+
+mount /stratis/<pool_name>/<stratis_snapshot_name> /mnt (to pull files, same as data restore programs)
+
+
+VDO:
+lsblk
+yum install -y vdo kmod-kvdo
+vdo create --name=vdo1 --device=/dev/sda3 --vdoLogicalSize=1T
+mkfs.xfs -K /dev/mapper/vdo1
+mkdir /vdo1 (to mount persistent)
+
+cp /usr/share/doc/vdo/examples/systemd/VDO.mount.example /etc/systemd/system/vdo1.mount
+
+edit file:
+what = /dev/mapper/vdo1
+where = /vdo1
+
+systemctl  enable --now vdo1.mount
+vdostats --human-readable
+
+df -h
+reboot
+
+
+
+
+
+
+### Chapter 16 ###
+basic kernel management
+
+dmesg
+/proc
+uname
+
+hostnamectl status
+hostnamectl set-hostname
+
+lsmod
+modinfo
+modprobe
+modprobe -r (rmmod does the same thing)
+
+lspci (find if they are available but not installed)
+
+
+
+### Chapter 17 ###
+managing and understanding the boot procedure
+
+grep Isolate *.target
+
+
+
+
+### Chapter 18 ###
+Essential Troubleshooting Skills
+
+Resetting the Root Password:
+during boot up > type "e" (edit)
+on the line that loads the kernel > rd.break > Ctrl-X
+mount -o remount,rw /sysroot
+chroot /sysroot
+passwd (change password)
+touch /.autorelabel (easier to do for selinux than the previous)
+
+#load_policy -i (for selinux policy to be loaded)
+#chcon -t shadow_t /etc/shadow
+
+
+
+
+### Chapter 19 ###
+scripting
+
+vim hello
+chmod +x hello
+./hello
+
+#!/bin/bash
+echo The first argument is $1
+echo the second argument is $2
+echo the third argument is $3
+
+(can only do 3 variables)
+
+#!/bin/bash
+echo you have entered $# arguments
+for i in $@
+do
+  echo $i
+done
+exit 0
+
+(you can add as many variables you want)
+
+
+#!/bin/bash
+if [ -z $1 ]; then
+            echo enter a name
+            read NAME
+else
+            NAME=$1
+fi
+echo you have entered the text $NAME
+exit 0
+
+
+
+
+
+
+### Chapter 20 ###
+Configure ssh
+
+vi /etc/ssh/sshd_config
+Port line Port 2022 (open a second port in case you break 22)
+AllowUsers <group of users>
+systemctl restart sshd
+
+IF BLOCKED:
+systemctl status -l sshd
+semanage port -a -t ssh_port_t -p tcp 2022
+
+open firewall:
+firewall-cmd --add-port 2022/tcp --permanent
+
+ssh -p (p for port)
+
+
+### Chapter 21 ###
+Managing Apache httpd
+
+yum module install httpd
+yum install curl
+
+configure inside /etc/httpd/conf.d
+
+
+
+
+### Chapter 22 ###
+managing selinux
+
+sestatus -v (full description)
+setenforce 0 or 1 (for permissive on or off)
+getenforce
+setsebool -P (P for permanent, otherwise it will default)
+getsebool -a (list all boolean)
+sealert ( to troubleshoot)
+  yum install setroubleshoot-server
+
+vi /etc/selinux/config
+change selinux to whateverr
+
+ls -Z
+ps Zaux
+ss -Ztul ( all network ports and the current context label)
+semanage (can find with yum whatprovides */semanage)
+
+semanage fcontext ( to set the context label on a directory)
+restorecon -R -v /<directory> (to set the context on the directory)
+
+how to get selinux policy man pages:
+man -k_selinux
+yum provides */sepolicy (this will show you the policycoreutils-devel to install)
+yum install policycoreutils-devel (to get the man pages for sepolicy)
+sepolicy manpage -a -p /usr/share/man/man8
+mandb (update the man pages database)
+man -k_selinux (now you can see list of man pages)
+
+restorecon to relabel files:
+restorecon -v /<directory>
+touch /.autorelabel
+
+
+
+### Chapter 23 ###
+firewalld
+
+firewall-cmd --get-zones
+firewall-cmd --get-default-zone
+firewall-cmd --set-default-zone=<zone>
+firewall-cmd --get-services
+firewall-cmd --list-services
+firewall-cmd --add-service
+firewall-cmd --add-port <port/protocol>
+firewall-cmd --remove-service=<service name>
+firewall-cmd --list-all-zones
+firewall-cmd --add-interface
+
+
+
+### Chapter 24 ###
+Accessing Network Storage
+
+yum install -y nfs-utils
+systemctl enable --now nfs-server
+firewall-cmd --add-service nfs --permanent
+firewall-cmd --add-service rpc-bind --permanent
+firewall-cmd --add-service mountd --permanent
+
+#/etc/exports is where you will write the nfs file share directory
+#showmount -e <servermounted> to see all the exports in the server that's nfs sharing
+
+mount server.system.local:/ /mnt
+
+#for automount#
+yum install -y autofs
+vi /etc/auto.master
+  /nfsdata /etc/auto.nfsdata
+vim /etc/auto.nfsdata
+  files -rw rhel8pt2.system.local:/nfsdata
+systemctl enable --now autofs
+
+#automount wildcard#
+vi /etc/auto.users
+  *   -rw   server2.example.com:/users/&
+vi /etc/auto.master
+  /users  /etc/auto.users
+
+
+
+
+### Chapter 25 ###
+Configuring Time Services
+
+date
+hwclock #didn't match same time
+timedatectl status
+timedatectl list-timezones
+timedatectl set-timezone 
+timedatectl show
+timedatectl set-ntp 1 #to turn on ntp
+yum install chrony
+vi /etc/chrony.conf
+systemctl enable --now chronyd
+firewall-cmd --add-service ntp --permanent
+firewall-cmd --reload
+
+
+
+### Chapter 26 ###
+container
+
+yum module install container-tools
+podman ps -a
+podman run -it busybox
+podman stop
+podman info
+podman pull #just downloads the image without running it
+podman inspect
+
+#26-2
+podman info
+podman login registry.redhat.io
+podman search registry.redhat.io/ubi8/ubi:latest
+skopeo inspect registry.redhat.io/ubi8
+podman pull registry.redhat.io/ubi8/ubi:latest
+podman images
+#26-3
+podmanrun -d --rm --name=web2 nginx
+podman ps
+podman exec -it web2 /bin/bash
+ps aux
+ls /proc
+cat /proc/1/cmdline
+#26-4
+podman run --name nginxport -d -p 8080:80 nginx
+podman ps
+sudo firewall-cmd --add-port 8080/tcp --permanent
+firewall-cmd --reload
+curl localhost:8080
+
+
+video
+podman run ubuntu
+podman run -it ubuntu   <----this gets you to run things in the container
+sup boys
