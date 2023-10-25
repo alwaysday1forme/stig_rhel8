@@ -5,6 +5,8 @@ python3 -m pip install jmespath
 /usr/bin/pip3.11 install jmespath
 
 
+
+
 #got the ansible lockdown RHEL8 stig
 git clone https://github.com/ansible-lockdown/RHEL8-STIG.git
 
@@ -20,6 +22,13 @@ ssh-keygen
 ssh-copy-id -i ~/.ssh/id_rsapub user@host
 
 
+#changed rhel8stig_path_to_sshkey: "/root/.ssh/"  >>> rhel8stig_path_to_sshkey: "~/.ssh/"
+#/home/student/stig_rhel8/RHEL8-STIG/defaults/main.yml
+#RHEL-08-010100
+#rhel8stig_path_to_sshkey: "/root/.ssh/"
+
+
+
 #ran as student and become was sudo password.
 #only CAT I
 ansible-playbook -i hosts --ask-become-pass -e '{ "rhel8stig_cat2_patch":false,"rhel8stig_cat3_patch":false }' site.yml
@@ -29,8 +38,10 @@ ansible-playbook -i hosts --ask-become-pass -e '{ "rhel8stig_cat2_patch":false,"
 
 #only CAT I, II and III
 #ansible-playbook -i hosts --ask-become-pass -e '{"rhel8stig_cat1_patch":true, "rhel8stig_cat2_patch":true,"rhel8stig_cat3_patch":true }' site.yml
-
-
+#
+#
+#you might need to update your ansible galaxy packages if you had done a operating system update
+#
 #NEEDED MODULES FROM ANSIBLE-GALAXY TO RUN PLAYBOOK
 ansible-galaxy collection install community.crypto
 #https://galaxy.ansible.com/ui/repo/published/community/crypto/
@@ -56,6 +67,7 @@ fatal: [192.168.1.22]: FAILED! => {
 /home/student/RHEL8-STIG/tasks/main.yml > ignore_errors: true > Check rhel8stig_bootloader_password_hash variable
 
 
+
 #failed at:
 #TASK [/home/student/RHEL8-STIG : HIGH | RHEL-08-010020 | PATCH | If /boot or /boot/efi reside on separate partitions, the kernel parameter boot=<partition> must be added to the kernel command line.] ***
 
@@ -63,10 +75,16 @@ fatal: [192.168.1.22]: FAILED! => {
 #ignore_errors: true
 
 
+
 #failed at:
-TASK [/home/student/RHEL8-STIG : HIGH | RHEL-08-010020 | AUDIT | Verify kernel parameters in /etc/default/grub]
+#TASK [/home/student/RHEL8-STIG : HIGH | RHEL-08-010020 | AUDIT | Verify kernel parameters in /etc/default/grub]
 
 #solution:
 #ignore_errors: true
 
 
+#failed at:
+#ERROR! couldn't resolve module/action 'community.crypto.openssh_keypair'. This often indicates a misspelling, missing collection, or incorrect module path
+
+#solution:
+after yum update. had to ansible-galaxy install the URLs mentioned earlier.

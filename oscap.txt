@@ -41,23 +41,46 @@ yum install openscap-utils
 #oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html --profile stig /usr/share/xml/scap/ssg/content/ssg-rhel8-xccdf.xml
 
 #failed
-# oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html --profile MAC-1_Classified ../SCAP/U_RHEL_8_V1R10_STIG_SCAP_1-2_Benchmark.xml
+# oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html --profile MAC-1_Classified ../SCAP/U_RHEL_8_V1R11_STIG_SCAP_1-2_Benchmark.xml
 #
 
-#winner winner chicken dinner
-#benchmark version10. NOT 11
-#oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html --profile MAC-1_Classified ../SCAP/U_RHEL_8_V1R10_STIG_SCAP_1-2_Benchmark.xml
+#WINNER WINNER CHICKEN DINNER
+#benchmark version11
+#oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html --profile MAC-1_Classified U_RHEL_8_V1R11_STIG_SCAP_1-2_Benchmark.xml
 
 
 #failed version11
 #oscap: Exporting ARF from XCCDF 1.1 is not allowed by SCAP specification. The resulting ARF will not validate. Convert the input to XCCDF 1.2 to get valid ARF results. The xccdf_1.1_to_1.2.xsl transformation.that ships with OpenSCAP can do that automatically.
 OpenSCAP Error: Unable to open file: '/tmp/tmp.q2zQuk2xCR/Red_Hat_Enterprise_Linux_8_STIG.xml' [/builddir/build/BUILD/openscap-1.3.8/src/source/oscap_source.c:298]
 
-# oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html --profile MAC-1_Classified U_RHEL_8_STIG_V1R11_Manual-xccdf.xml
+# oscap-ssh student@192.168.1.22 22 xccdf eval --report /var/www/html/remote_report.html U_RHEL_8_STIG_V1R11_Manual-xccdf.xml
+
+
+
+#https://docs.oracle.com/en/operating-systems/oracle-linux/8/oscap/oscap-CheckingComplianceWithOSCAP.html#sect-scan
+#https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/scanning-the-system-for-configuration-compliance-and-vulnerabilities_security-hardening
 
 
 
 
 
-https://docs.oracle.com/en/operating-systems/oracle-linux/8/oscap/oscap-CheckingComplianceWithOSCAP.html#sect-scan
-https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/scanning-the-system-for-configuration-compliance-and-vulnerabilities_security-hardening
+
+
+
+
+
+###VULNERABILITY SCANNING
+#OVAL
+#https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/security_hardening/scanning-the-system-for-configuration-compliance-and-vulnerabilities_security-hardening#scanning-the-system-for-vulnerabilities_vulnerability-scanning
+
+#https://www.redhat.com/security/data/oval/v2/RHEL8/
+
+scp rhel-8.oval.xml.bz2 to CONTROLLER VM
+cd /home/student/stig-rhel8/SCAP/
+bzip2 --decompress > rhel-8.oval.xml
+
+#to scan system it is on
+oscap oval eval --report vulnerability.html rhel-8.oval.xml
+
+#to scan remote system
+oscap-ssh student@192.168.1.21 22 oval eval --report /var/www/html/remote-vulnerability.html rhel-8.oval.xml
