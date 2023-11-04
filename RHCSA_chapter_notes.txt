@@ -29,7 +29,7 @@ df -hT
 mount
 ln -s  #symbolic link #example ln -s /source /dest
 tar -tvf file.tar #to see contents
-tar -tcf #to archive
+tar -cvf #to archive verbose
 tar -xvf file.tar -C /directory #-C is location you want to untar it
 gzip to compress
 gunzip to uncompress but can leave it .tar still
@@ -46,6 +46,8 @@ more /etc/passwd
 cut -f 1 -d : /etc/passwd   #-f is field, 1 is for first, -d is delimiter which is ':'
 sort -k is to sort by column
 
+learn awk
+learn sed
 
 
 ### Chapter 5 ###
@@ -62,7 +64,7 @@ chvt 4-6 gives access to non graphical consoles
 
 #overview of all users who are currently logged in.
 commands:
- w
+w
 
 systemctl reboot
 systemctl poweroff
@@ -103,12 +105,17 @@ chown -R ownership:group (-R recursive)
 newgrp (to change primary group for user)
 chmod -R o+rx /directory (big X instead for executable on directories only)
 
+chmod g+s (group sticky makes group ownership of new files)
+chmod o+t (others can't delete)
 
-getfacl
-setfacl
+
+getfacl /data/account (shows information for each directory for u,g,o
+setfacl -m g:account:rx account/ (this gives group only rights to r,x)
+
+
 umask
-chattr
-lsattr
+chattr +i immutable to make sure files don't get deleted
+lsattr to see other flags that getfacl can't see
 
 
 
@@ -123,6 +130,11 @@ ip route show
 
 nmtui
 nmcli con show
+
+hostnamectl set-hostname <name>
+hostnamectl status
+
+cat /etc/hosts > info for the dns
 
 
 
@@ -170,7 +182,7 @@ yum distro-sync (make sure dependent packages are updated)
 
 
 rpm -qa (list all packages on the server)
-which <package> (find the /sbin/<package>
+which <package> (find the /sbin/<package>-
 
 rpm -qf $(which <package>) ---> will find you the rpm for the module
 
@@ -232,8 +244,9 @@ cd /etc/cron.monthly
 
 chmod +x <file> (otherwise the task won't execute)
 
+#not necessary. you can use cron.
 at command
-systemctl status at
+systemctl status atd
 at 15:00 (runs command at 1500)
 <input command> Ctrl+D to exit
 atq to see the command given
@@ -248,10 +261,18 @@ vi /etc/httpd/conf/httpd.conf
 ErrorLog  syslog:local1
 systemctl restart httpd
 
-add a line in /etc/rsyslog.conf:
+mkdri /var/log/journal
+#add a line in /etc/rsyslog.conf:
 #/var/log/httpd-error.log (used from the httpd service ^)
-local1.error  /var/log/httpd-error.log
+*.error  /var/log/error
 systemctl restart rsyslog
+
+cd /etc/logrotate.d/
+vim error:
+/var/log/error{
+	monthly
+	rotate 12
+}
 
 echo "*.debug /var/log/messages-debug"> /etc/rsyslog.d/debug.conf
 
@@ -566,33 +587,69 @@ firewall-cmd --add-interface
 
 ### Chapter 24 ###
 Accessing Network Storage
-
+ 
+#ON NFS SERVER#
 yum install -y nfs-utils
 systemctl enable --now nfs-server
-firewall-cmd --add-service nfs --permanent
-firewall-cmd --add-service rpc-bind --permanent
-firewall-cmd --add-service mountd --permanent
-
+firewall-cmd --add-service={nfs,rpc-nind,mountd}/tcp --permanent
+firewall-cmd --reload
 #/etc/exports is where you will write the nfs file share directory
+mkdir /data
+vim /etc/exports:
+  	/data	*  (rw,no_root_squash)
+  	/home/ldap *(rw)
+
+#ON NFS CLIENT#
 #showmount -e <servermounted> to see all the exports in the server that's nfs sharing
+mount <ip of nfs server>:/ /mnt
 
-mount server.system.local:/ /mnt
 
-#for automount#
+
+#SAMBA SERVER#
+ON SAMBA Server:
+yum install samba
+mkdir /samba; chown samba. /samba; chmod 777 /samba
+create linux user: useradd samba; smbpasswd -a samba
+vim /etc/samba/smb.conf:
+	[samba]
+		comment = samba share
+		path = /samba
+		write list = samba
+systemctl restart samba
+firewall-cmd --add-service samba --permanent
+firewall-cmd --reload
+
+#ON SAMBA CLIENT#
+yum install cifs-utils
+yum install samba-client
+
+smbclient -L //<ip of samba server>; press enter for no root password; (this will show the details)
+mount -o username=samba //192.168.1.21/samba/ /mnt (password of samba user from samba server)
+vim /etc/fstab:
+	//192.168.1.21/samba	/samba	cifs	_netdev,username=samba,password=password 0 0
+mount -a (just to check)
+
+
+#AUTOFS SERVER#
+vim /path/to/directory/to/share:
+	/home/ldap	*(rw)     <--gives all read and write
+
+
+#ON AUTOFS CLIENT:
 yum install -y autofs
 vi /etc/auto.master
-  /nfsdata /etc/auto.nfsdata
-vim /etc/auto.nfsdata
-  files -rw rhel8pt2.system.local:/nfsdata
+  /files	/etc/auto.files	(/files will not show you folders inside but you can cd to it)
+vim /etc/auto.files
+  data	-rw	<auto_server>:/data
 systemctl enable --now autofs
 
 #automount wildcard#
-vi /etc/auto.users
-  *   -rw   server2.example.com:/users/&
+vi /etc/auto.ldap
+  *   -rw   <nfs_server>:/home/ldap/&
 vi /etc/auto.master
-  /users  /etc/auto.users
+  /home/ldap  /etc/auto.ldap
 
-
+verify by navigating to /files on client server. you can "cd data" to see the content from AUTOFS SERVER.
 
 
 ### Chapter 25 ###
