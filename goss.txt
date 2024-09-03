@@ -1,0 +1,35 @@
+https://github.com/goss-org/goss/
+https://github.com/ansible-lockdown/RHEL8-STIG-Audit?tab=readme-ov-file
+
+
+ansible playbook > goss download & rhel audit git download #edit for gpg_keys in RHEL8-STIG-Audit/vars/STIG.yml
+ansible > dnf install jq ansible-engine
+run the audit  #just ran the run_audit.sh
+consolidate the stig fails into a txt file
+#look into remediation with the txt files.  but for now, i can just give to security
+ 
+
+compare servers
+establish REAL deltas
+then create jinjas
+
+
+
+look for gpg_key in the playbooks #changed it to gpg_keys for goss
+
+
+
+#filter the audit.file for the STIG ID's
+cat audit_client.system-STIG-RHEL8_1714328261.json |jq '.results[].meta.STIG_ID' -Mr
+
+
+#how to find the list of stig failed items.
+cat /opt/audit_client.system-STIG-RHEL8_1714328261.json |jq '.results[] | select (.result ==1)' | jq '.meta.STIG_ID' -Mr 
+
+
+cat /opt/audit_client.system-STIG-RHEL8_1714328261.json |jq '.results[] | select (.result ==1)' | jq '.title' -Mr
+
+
+
+
+

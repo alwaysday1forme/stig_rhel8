@@ -1,0 +1,32 @@
+#for the audit portion
+ANSIBLE-LOCKDOWN 
+/defaults/main.yml
+  edited:
+  rhel8stig_cat1_patch
+  run_audit: true
+  audit_only: true
+  audit_capture_files_dir: /tmp/capture
+  audit_bin_copy_location: /tmp/bin
+  audit_conf_copy: /tmp/bin
+  #audit_files_url: "some s3 url?"
+  rhel_bootloader > pumbaa
+  
+/tasks/post_audit_remediation.yml
+    Post Audit | Run post_remediation "{{benchmark}}" audit  #line3
+  
+  
+created ssh-keygen for /root/.ssh
+alternatives --config python3 > changed to 3.11
+  wget https://bootstrap.pypa.io/get-pip.py
+  python3 ./get-pip.py
+  python3 -m pip install -r requirements.txt
+ 
+
+HAD TO INSTALL:
+ansible-galaxy collection install community.crypto
+ansible-galaxy collection install community.general
+ansible-galaxy collection install ansible.posix
+python3 -m pip install jmespath
+
+https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_RHEL_8_V1R13_STIG.zip
+
