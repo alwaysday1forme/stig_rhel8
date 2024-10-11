@@ -6,15 +6,14 @@ ansible playbook > goss download & rhel audit git download #edit for gpg_keys in
 ansible > dnf install jq ansible-engine
 run the audit  #just ran the run_audit.sh
 consolidate the stig fails into a txt file
-#look into remediation with the txt files.  but for now, i can just give to security
- 
 
+#look into remediation with the txt files
 compare servers
 establish REAL deltas
 then create jinjas
 
 
-
+#typo was stopping it.
 look for gpg_key in the playbooks #changed it to gpg_keys for goss
 
 
