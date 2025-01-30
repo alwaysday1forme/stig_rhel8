@@ -2,6 +2,14 @@ https://github.com/goss-org/goss/
 https://github.com/ansible-lockdown/RHEL8-STIG-Audit?tab=readme-ov-file
 
 
+#copy goss to /usr/local/bin/goss
+cd goss
+chmod +x install.sh
+./install.sh
+#verify /usr/local/bin/goss
+
+
+
 ansible playbook > goss download & rhel audit git download #edit for gpg_keys in RHEL8-STIG-Audit/vars/STIG.yml
 ansible > dnf install jq ansible-engine
 run the audit  #just ran the run_audit.sh
